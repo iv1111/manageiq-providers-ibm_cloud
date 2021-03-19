@@ -12,6 +12,8 @@
 :ems_refresh:
   :ibm_vpc:
     :refresh_interval: 15.minutes
+  :ems_refresh_worker_ibm_cloud_object_storage:
+    :refresh_interval: 15.minutes
   :ibm_cloud_power_virtual_servers:
     :refresh_interval: 15.minutes
     :storage_types:
@@ -38,3 +40,4 @@
       :ems_refresh_worker:
         :ems_refresh_worker_ibm_cloud_power_virtual_servers: {}
         :ems_refresh_worker_ibm_cloud_vpc: {}
+        :ems_refresh_worker_ibm_cloud_object_storage: {}
