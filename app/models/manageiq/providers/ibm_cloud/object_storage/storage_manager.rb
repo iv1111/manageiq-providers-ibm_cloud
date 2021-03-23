@@ -1,6 +1,4 @@
-class ManageIQ::Providers::IbmCloud::CloudObjectStorage::StorageManager < ManageIQ::Providers::StorageManager
-  require_nested :MetricsCapture
-  require_nested :MetricsCollectorWorker
+class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::Providers::StorageManager
   require_nested :Refresher
   require_nested :RefreshWorker
 
@@ -8,11 +6,11 @@ class ManageIQ::Providers::IbmCloud::CloudObjectStorage::StorageManager < Manage
   include ManageIQ::Providers::StorageManager::ObjectMixin
 
   def self.ems_type
-    @ems_type ||= "cloud_object_storage".freeze
+    @ems_type ||= "ibm_cloud_object_storage".freeze
   end
 
   def self.description
-    @description ||= "Cloud Object Storage".freeze
+    @description ||= "IBM Cloud Object Storage".freeze
   end
 
   def self.raw_connect(username, password, host, port)
