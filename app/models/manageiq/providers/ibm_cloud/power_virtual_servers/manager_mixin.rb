@@ -104,25 +104,7 @@ module ManageIQ::Providers::IbmCloud::PowerVirtualServers::ManagerMixin
                       :skipSubmit             => true,
                       :isRequired             => true,
                       :validationDependencies => %w[type zone_id uid_ems],
-                      :fields                 => [
-                        {
-                          :component  => "password-field",
-                          :name       => "authentications.default.auth_key",
-                          :id         => "authentications.default.auth_key",
-                          :label      => _("IBM Cloud API Key"),
-                          :type       => "password",
-                          :isRequired => true,
-                          :validate   => [{:type => "required"}]
-                        },
-                        {
-                          :component  => "text-field",
-                          :name       => "uid_ems",
-                          :id         => "uid_ems",
-                          :label      => _("PowerVS Service GUID"),
-                          :isRequired => true,
-                          :validate   => [{:type => "required"}],
-                        }
-                      ]
+
                     }
                   ]
                 }
@@ -133,16 +115,6 @@ module ManageIQ::Providers::IbmCloud::PowerVirtualServers::ManagerMixin
       }.freeze
     end
 
-    # Verify Credentials
-    # args:
-    # {
-    #   "uid_ems"         => "",
-    #   "authentications" => {
-    #     "default" => {
-    #       "auth_key" => "",
-    #     }
-    #   }
-    # }
     def verify_credentials(args)
       pcloud_guid = args["uid_ems"]
       auth_key = args.dig("authentications", "default", "auth_key")
