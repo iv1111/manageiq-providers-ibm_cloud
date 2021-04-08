@@ -32,6 +32,7 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
           {
             :component  => "text-field",
             :name       => "endpoints.default.url",
+            :id         => "endpoints.default.url",
             :label      => _("Endpoint"),
             :isRequired => true,
             :validate   => [{:type => "required"}],
@@ -67,9 +68,10 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     }
   end
 
-  def verify_bearer
+  def verify_bearer(args)
     begin
-      connect(nil).list_buckets(:max_results => 1)
+      connect(args).list_buckets({}, params: {max_keys: 1})
+      return true
     rescue IbmCloudIam::ApiError => err
       error_message = JSON.parse(err.response_body)["message"]
       _log.error("Access/Secret authentication failed: #{err.code} #{error_message}")
@@ -77,16 +79,38 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     end
   end
 
-  def verify_iam
+  def verify_iam(args)
+    guid    = args["uid_ems"]
+    api_key = args.dig("authentications", "default", "auth_key")
+
     begin
       require "ibm_cloud_iam"
       iam_token_api = IbmCloudIam::TokenOperationsApi.new
-      iam_token_api.get_token_api_key("urn:ibm:params:oauth:grant-type:apikey", api_key)
+      token = iam_token_api.get_token_api_key("urn:ibm:params:oauth:grant-type:apikey", api_key)
     rescue IbmCloudIam::ApiError => err
       error_message = JSON.parse(err.response_body)["message"]
       _log.error("IAM authentication failed: #{err.code} #{error_message}")
       raise MiqException::MiqInvalidCredentialsError, error_message
     end
+
+    require "ibm_cloud_resource_controller"
+    api_client = IbmCloudResourceController::ApiClient.new
+    api_client.config.api_key        = {"Authorization" => token.access_token}
+    api_client.config.api_key_prefix = {"Authorization" => token.token_type}
+    api_client.config.access_token   = {"Authorization" => token.access_token}
+    api_client.config.logger         = $ibm_cloud_log
+
+    resource_instances_api = IbmCloudResourceController::ResourceInstancesApi.new(api_client)
+
+    # begin
+    #   resource_instances_api.get_resource_instance(guid)
+    # rescue IbmCloudResourceController::ApiError => err
+    #   error_message = JSON.parse(err.response_body)["message"]
+    #   _log.error("GUID resource lookup failed: #{err.code} #{error_message}")
+    #   raise MiqException::MiqInvalidCredentialsError, error_message
+    # end
+
+    return true
   end
 
   def self.hostname_required?
@@ -116,19 +140,19 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     Aws.const_get(:S3)::Resource.new(options)
   end
 
-  def connect(_options)
-    bearer = get_auth_node('bearer')
-    connection = self.class.raw_connect(provider_region, default_endpoint.url, bearer[:access_key], bearer[:secret_key])
+  def connect(args)
+    region = args["provider_region"]
+    endpoint = args.dig("endpoints", "default", "url")
+    access_key = args.dig("authentications", "bearer", "userid")
+    secret_key = args.dig("authentications", "bearer", "password")
+
+    connection = self.class.raw_connect(region, endpoint, access_key, secret_key)
     return connection.client
   end
 
-  def get_auth_node(node)
-    authentications.detect { |e| e.authtype == node } || {}
-  end
-
   def get_cos_creds
-    default = get_auth_node('default')
-    bearer  = get_auth_node('bearer')
+    default = authentications.detect { |e| e.authtype == 'default' } || {}
+    bearer  = authentications.detect { |e| e.authtype == 'bearer' }  || {}
 
     cos_ans_creds = {resource_instance_id: uid_ems, apikey: default.auth_key}
     cos_pvs_creds = {region: provider_region, accessKey: bearer.userid, secretKey: bearer.auth_key}
@@ -136,9 +160,8 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     return cos_ans_creds, cos_pvs_creds
   end
 
-  def verify_credentials(_options)
-    verify_iam
-    verify_bearer
+  def verify_credentials(args)
+    verify_iam(args) && verify_bearer(args)
   end
 
   def image_name
