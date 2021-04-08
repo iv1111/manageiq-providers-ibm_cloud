@@ -102,13 +102,13 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
 
     resource_instances_api = IbmCloudResourceController::ResourceInstancesApi.new(api_client)
 
-    # begin
-    #   resource_instances_api.get_resource_instance(guid)
-    # rescue IbmCloudResourceController::ApiError => err
-    #   error_message = JSON.parse(err.response_body)["message"]
-    #   _log.error("GUID resource lookup failed: #{err.code} #{error_message}")
-    #   raise MiqException::MiqInvalidCredentialsError, error_message
-    # end
+    begin
+      resource_instances_api.get_resource_instance(guid)
+    rescue IbmCloudResourceController::ApiError => err
+      error_message = JSON.parse(err.response_body)["message"]
+      _log.error("GUID resource lookup failed: #{err.code} #{error_message}")
+      raise MiqException::MiqInvalidCredentialsError, error_message
+    end
 
     return true
   end
@@ -144,7 +144,7 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     region = args["provider_region"]
     endpoint = args.dig("endpoints", "default", "url")
     access_key = args.dig("authentications", "bearer", "userid")
-    secret_key = args.dig("authentications", "bearer", "password")
+    secret_key = args.dig("authentications", "beareyr", "password")
 
     connection = self.class.raw_connect(region, endpoint, access_key, secret_key)
     return connection.client
