@@ -23,14 +23,7 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::ObjectManager < ManageIQ::Pr
                 :name      => 'default-tab',
                 :title     => _('Default'),
                 :fields    => [
-                  {
-                    :component              => 'validate-provider-credentials',
-                    :id                     => 'endpoints.default.valid',
-                    :name                   => 'endpoints.default.valid',
-                    :skipSubmit             => true,
-                    :isRequired             => true,
-                    :validationDependencies => %w[type zone_id uid_ems],
-                    :fields                 => [
+                  [
                       {
                         :component  => "text-field",
                         :name       => "provider_region",
@@ -82,7 +75,6 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::ObjectManager < ManageIQ::Pr
                         :type       => "password",
                       }
                     ]
-                  }
                 ]
               }
             ]
