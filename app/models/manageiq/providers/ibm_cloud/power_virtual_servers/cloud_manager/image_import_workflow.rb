@@ -21,15 +21,15 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImp
     ems = ExtManagementSystem.find(options[:ems_id])
 
     body = {
-      source:         'url',
-      imageName:      options[:miq_img][:name],
-      osType:         options[:miq_img][:os],
-      imageFilename: "#{options[:session_id]}.ova",
+      :source        => 'url',
+      :imageName     => options[:miq_img][:name],
+      :osType        => options[:miq_img][:os],
+      :imageFilename => "#{options[:session_id]}.ova",
       **options[:cos_pvs_creds]
     }
 
     ems.with_provider_connection(:service => 'PCloudImagesApi') do |api|
-      response = api.pcloud_cloudinstances_images_post(ems.uid_ems, body, opts = {})
+      response = api.pcloud_cloudinstances_images_post(ems.uid_ems, body, {})
       context[:task_id] = response.taskref.task_id
 
       started_on = Time.now.utc
@@ -79,6 +79,7 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImp
 
   def post_poll_cleanup
     return if options[:keep_ova] == true
+
     cos = ExtManagementSystem.find(options[:cos_id])
     cos.remove_object(options[:bucket_name], options[:session_id] + '.ova')
   end

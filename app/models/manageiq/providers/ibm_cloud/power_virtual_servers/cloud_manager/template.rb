@@ -60,18 +60,18 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
     [encr, key, iv]
   end
 
-  def self.miq_img_by_ids(provider_id, id)
+  def self.miq_img_by_ids(provider_id, image_id)
     powervc = ExtManagementSystem.find(provider_id)
-    powervc.get_image_info(id)
+    powervc.get_image_info(image_id)
   end
 
-  def self.cos_creds(id)
-    cos  = ExtManagementSystem.find(id)
-    return cos.cos_creds
+  def self.cos_creds(provider_id)
+    cos = ExtManagementSystem.find(provider_id)
+    cos.cos_creds
   end
 
-  def self.node_creds(id)
-    powervc  = ExtManagementSystem.find(id)
+  def self.node_creds(provider_id)
+    powervc = ExtManagementSystem.find(provider_id)
     endp = powervc.node_endpoint
     auth = powervc.node_auth
 
@@ -95,33 +95,35 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
     cos_credentials = cos_creds(options['obj_storage_id'])
     bucket = bucket_name(options['bucket_id'])
 
-    cos_ans_creds = {resource_instance_id: cos_credentials[0], apikey: cos_credentials[1], bucket_name: bucket, url_endpoint: cos_credentials[3]}
-    cos_pvs_creds = {region: cos_credentials[2], bucketName: bucket, accessKey: cos_credentials[4], secretKey: cos_credentials[5]}
+    cos_ans_creds = {:resource_instance_id => cos_credentials[0], :apikey => cos_credentials[1], :bucket_name => bucket, :url_endpoint => cos_credentials[3]}
+    cos_pvs_creds = {:region => cos_credentials[2], :bucketName => bucket, :accessKey => cos_credentials[4], :secretKey => cos_credentials[5]}
 
-    encr_cos_creds, encr_cos_key, encr_cos_iv  = encrypt_with_aes(cos_ans_creds)
+    encr_cos_creds, encr_cos_key, encr_cos_iv = encrypt_with_aes(cos_ans_creds)
+
+    credentials = []
 
     extra_vars = {
-      session_id:     session_id,
-      provider_id:    options['src_provider_id'],
-      image_id:       image_ems_ref(options['src_image_id']),
-      credentials:    encr_cos_creds,
-      creds_aes_key:  encr_cos_key,
-      creds_aes_iv:   encr_cos_iv
+      :session_id    => session_id,
+      :provider_id   => options['src_provider_id'],
+      :image_id      => image_ems_ref(options['src_image_id']),
+      :credentials   => encr_cos_creds,
+      :creds_aes_key => encr_cos_key,
+      :creds_aes_iv  => encr_cos_iv
     }
 
     options = {
-      keep_ova:       options['keep_ova'],
-      session_id:     session_id,
-      ems_id:         ext_management_system.id,
-      cos_id:         options['obj_storage_id'],
-      bucket_name:    bucket,
-      miq_img:        miq_img_by_ids(options['src_provider_id'], options['src_image_id']),
-      cos_pvs_creds:  cos_pvs_creds,
-      playbook_path:  ManageIQ::Providers::IbmCloud::Engine.root.join("content/ansible_runner/import.yaml"),
+      :keep_ova      => options['keep_ova'],
+      :session_id    => session_id,
+      :ems_id        => ext_management_system.id,
+      :cos_id        => options['obj_storage_id'],
+      :bucket_name   => bucket,
+      :miq_img       => miq_img_by_ids(options['src_provider_id'], options['src_image_id']),
+      :cos_pvs_creds => cos_pvs_creds,
+      :playbook_path => ManageIQ::Providers::IbmCloud::Engine.root.join("content/ansible_runner/import.yaml"),
     }
 
     _log.info("execute image import playbook")
-    job = ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImportWorkflow.create_job({}, extra_vars, options, hosts, credentials = [], poll_interval: 5.seconds)
+    job = ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImportWorkflow.create_job({}, extra_vars, options, hosts, credentials, :poll_interval => 5.seconds)
     job.signal(:start)
   end
 

@@ -31,12 +31,11 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
                     :isRequired             => true,
                     :validationDependencies => %w[type zone_id uid_ems],
                     :fields                 => [
-                      { :component  => "text-field", :name       => "provider_region",
+                      {:component => "text-field", :name => "provider_region",
                         :id         => "provider_region",
                         :label      => _("Region"),
                         :isRequired => true,
-                        :validate   => [{:type => "required"}],
-                      },
+                        :validate   => [{:type => "required"}],},
                       {
                         :component  => "text-field",
                         :name       => "uid_ems",
