@@ -50,7 +50,7 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
   end
 
   def self.encrypt_with_aes(creds)
-    cipher = OpenSSL::Cipher::AES.new(256, :CBC)
+    cipher = OpenSSL::Cipher.new('aes-256-cbc')
     cipher.encrypt
 
     key  = Base64.strict_encode64(cipher.random_key)

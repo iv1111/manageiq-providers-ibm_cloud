@@ -29,3 +29,4 @@
     - name: perform cleanup
       file: state=absent path="{{session_dir.path}}"
       when: session_dir is defined
+
