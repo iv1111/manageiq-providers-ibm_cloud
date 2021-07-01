@@ -89,6 +89,10 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     }.freeze
   end
 
+  def queue_name_for_ems_refresh
+    queue_name
+  end
+
   def self.hostname_required?
     false
   end
