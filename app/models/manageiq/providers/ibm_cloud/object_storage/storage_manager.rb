@@ -31,7 +31,8 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
                     :isRequired             => true,
                     :validationDependencies => %w[type zone_id uid_ems],
                     :fields                 => [
-                      {:component => "text-field", :name => "provider_region",
+                      { :component  => "text-field",
+                        :name       => "provider_region",
                         :id         => "provider_region",
                         :label      => _("Region"),
                         :isRequired => true,
@@ -87,10 +88,6 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
         }
       ]
     }.freeze
-  end
-
-  def queue_name_for_ems_refresh
-    queue_name
   end
 
   def self.hostname_required?
@@ -206,5 +203,9 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     }
 
     Aws.const_get(:S3)::Resource.new(options).client
+  end
+
+  def queue_name_for_ems_refresh
+    queue_name
   end
 end
