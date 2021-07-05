@@ -39,6 +39,16 @@ const fetchImages = (provider) => {
     })
 }
 
+const fetchDiskTypes = () => {
+    return new Promise((resolve, reject) => {
+        API.get('/api/cloud_volume_types?expand=resources&attributes=id,name').then(({resources}) => {
+            let options = resources.map(({id, name}) => ({value: id, label: name}));
+            options.unshift(BLANK);
+            resolve(options);
+        })
+    })
+}
+
 const fetchBuckets = (provider) => {
     return new Promise((resolve, reject) => {
         API.get('/api/cloud_object_store_containers?expand=resources&attributes=name,ems_id&filter[]=ems_id=' + provider).then(({resources}) => {
@@ -54,10 +64,12 @@ const ImportImageForm = ({ dispatch }) => {
   const [storage,  setStorage]  = useState('-1');
   const [image,    setImage]    = useState('-1');
   const [bucket,   setBucket]   = useState('-1');
+  const [diskType, setDiskType] = useState('-1');
   const [keepOva,  setKeepOva]  = useState(false);
 
   const providers = fetchProviders('cloud');
   const storages  = fetchProviders('storage');
+  const diskTypes = fetchDiskTypes();
   const images    = useMemo(() => fetchImages(provider), [provider]);
   const buckets   = useMemo(() => fetchBuckets(storage), [storage]);
 
@@ -74,11 +86,11 @@ const ImportImageForm = ({ dispatch }) => {
           return
       }
 
-      const body = {"action": "import", "dst_provider_id": ManageIQ.record.recordId, "src_provider_id": provider, "src_image_id": image, "obj_storage_id": storage, "bucket_id": bucket, 'keep_ova': keepOva};
+      const body = {"action": "import", "dst_provider_id": ManageIQ.record.recordId, "src_provider_id": provider, "src_image_id": image, "obj_storage_id": storage, "bucket_id": bucket, "disk_type_id": diskType, 'keep_ova': keepOva};
       API.post('/api/cloud_templates', body).then( ({ results }) => window.add_flash("Request Submitted!"));
   };
 
-  return (<div><MiqFormRenderer initialize={initialize} schema={createSchema(providers, provider, setProvider, images, image, setImage, storages, storage, setStorage, buckets, bucket, setBucket, keepOva, setKeepOva)} showFormControls={false} onSubmit={submitValues}/></div>)
+  return (<div><MiqFormRenderer initialize={initialize} schema={createSchema(providers, provider, setProvider, images, image, setImage, storages, storage, setStorage, buckets, bucket, setBucket, diskTypes, setDiskType, keepOva, setKeepOva)} showFormControls={false} onSubmit={submitValues}/></div>)
 };
 
 ImportImageForm.propTypes = {

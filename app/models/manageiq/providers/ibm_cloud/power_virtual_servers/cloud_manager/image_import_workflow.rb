@@ -24,6 +24,7 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImp
       :source        => 'url',
       :imageName     => options[:miq_img][:name],
       :osType        => options[:miq_img][:os],
+      :diskType      => options[:diskType],
       :imageFilename => "#{options[:session_id]}.ova",
       **options[:cos_pvs_creds]
     }

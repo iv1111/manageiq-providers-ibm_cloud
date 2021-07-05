@@ -95,6 +95,8 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
     cos_credentials = cos_creds(options['obj_storage_id'])
     bucket = bucket_name(options['bucket_id'])
 
+    diskType = CloudVolumeType.find(options['disk_type_id']).name
+
     cos_ans_creds = {:resource_instance_id => cos_credentials[0], :apikey => cos_credentials[1], :bucket_name => bucket, :url_endpoint => cos_credentials[3]}
     cos_pvs_creds = {:region => cos_credentials[2], :bucketName => bucket, :accessKey => cos_credentials[4], :secretKey => cos_credentials[5]}
 
@@ -117,6 +119,7 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
       :ems_id        => ext_management_system.id,
       :cos_id        => options['obj_storage_id'],
       :bucket_name   => bucket,
+      :diskType      => diskType,
       :miq_img       => miq_img_by_ids(options['src_provider_id'], options['src_image_id']),
       :cos_pvs_creds => cos_pvs_creds,
       :playbook_path => ManageIQ::Providers::IbmCloud::Engine.root.join("content/ansible_runner/import.yaml"),

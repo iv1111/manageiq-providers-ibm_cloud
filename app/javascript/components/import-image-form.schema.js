@@ -2,7 +2,7 @@ import React from 'react';
 import { componentTypes, validatorTypes } from '@@ddf';
 
 
-const createSchema = (providers, provider, setProvider, images, image, setImage, storages, storage, setStorage, buckets, bucket, setBucket, keepOva, setKeepOva) => ({
+const createSchema = (providers, provider, setProvider, images, image, setImage, storages, storage, setStorage, buckets, bucket, setBucket, diskTypes, setDiskType, keepOva, setKeepOva) => ({
   fields: [
     {
       component: componentTypes.SELECT,
@@ -49,6 +49,18 @@ const createSchema = (providers, provider, setProvider, images, image, setImage,
       loadOptions: () => buckets,
       onChange: (value) => {setBucket(value)},
     },
+
+    {
+      component: componentTypes.SELECT,
+      name: "diskType_id",
+      id:"diskType_id",
+      initializeOnMount: true,
+      isRequired: true,
+      label: "Choose Disk Type",
+      loadOptions: () => diskTypes,
+      onChange: (value) => {setDiskType(value)},
+    },
+
     {
       component: 'checkbox',
       name: "keep_ova",
