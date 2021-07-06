@@ -1,20 +1,6 @@
 class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImportWorkflow < ManageIQ::Providers::AnsiblePlaybookWorkflow
   def load_transitions
-    self.state ||= 'initialize'
-
-    {
-      :initializing      => {'initialize'         => 'waiting_to_start'},
-      :start             => {'waiting_to_start'   => 'pre_execute'},
-      :pre_execute       => {'pre_execute'        => 'execute'},
-      :execute           => {'execute'            => 'running'},
-      :poll_runner       => {'running'            => 'running'},
-      :post_execute      => {'running'            => 'post_execute_poll'},
-      :post_execute_poll => {'post_execute_poll'  => 'post_execute_poll'},
-      :finish            => {'*'                  => 'finished'},
-      :abort_job         => {'*'                  => 'aborting'},
-      :cancel            => {'*'                  => 'canceling'},
-      :error             => {'*'                  => '*'}
-    }
+    super.merge(:post_execute => {'running' => 'post_execute_poll'}, :post_execute_poll => {'post_execute_poll' => 'post_execute_poll'})
   end
 
   def post_execute
@@ -38,7 +24,9 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImp
       miq_task.update!(:started_on => started_on)
     end
 
-    route_signal(:post_execute_poll, 'importing image into PVS', 'running')
+    cleanup_git_repository
+
+    queue_signal(:post_execute_poll, 'importing image into PVS', 'running')
   end
 
   def post_execute_poll(*args)
@@ -75,7 +63,7 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImp
       end
     end
 
-    route_signal(signal, msg, status)
+    queue_signal(signal, msg, status)
   end
 
   def post_poll_cleanup
