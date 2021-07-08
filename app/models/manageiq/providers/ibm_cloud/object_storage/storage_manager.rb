@@ -206,7 +206,7 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
   end
 
   def remove_object(bucket_name, object_name)
-    client.delete_object({:bucket => bucket_name, :key => object_name})
+    connect.delete_object({:bucket => bucket_name, :key => object_name})
   end
 
   def queue_name_for_ems_refresh
