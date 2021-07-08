@@ -205,6 +205,10 @@ class ManageIQ::Providers::IbmCloud::ObjectStorage::StorageManager < ManageIQ::P
     Aws.const_get(:S3)::Resource.new(options).client
   end
 
+  def remove_object(bucket_name, object_name)
+    client.delete_object({:bucket => bucket_name, :key => object_name})
+  end
+
   def queue_name_for_ems_refresh
     queue_name
   end
