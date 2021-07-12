@@ -90,7 +90,7 @@ const ImportImageForm = ({ dispatch }) => {
       API.post('/api/cloud_templates', body).then( ({ results }) => window.add_flash("Request Submitted!"));
   };
 
-  return (<div><MiqFormRenderer initialize={initialize} schema={createSchema(providers, provider, setProvider, images, image, setImage, storages, storage, setStorage, buckets, bucket, setBucket, diskTypes, setDiskType, keepOva, setKeepOva)} showFormControls={false} onSubmit={submitValues}/></div>)
+  return (<div><div id="ignore_form_changes" /><MiqFormRenderer initialize={initialize} schema={createSchema(providers, provider, setProvider, images, image, setImage, storages, storage, setStorage, buckets, bucket, setBucket, diskTypes, setDiskType, keepOva, setKeepOva)} showFormControls={false} onSubmit={submitValues}/></div>)
 };
 
 ImportImageForm.propTypes = {
