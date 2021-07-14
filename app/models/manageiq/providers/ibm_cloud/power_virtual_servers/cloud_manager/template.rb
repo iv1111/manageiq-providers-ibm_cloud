@@ -57,13 +57,13 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
     location, user, password = node_creds(options['src_provider_id'])
     hosts = ["[powervc]\n#{location}\n[powervc:vars]\nansible_connection=ssh\nansible_user=#{user}\nansible_ssh_pass=#{password}"]
 
-    cos_credentials = cos_creds(options['obj_storage_id'])
+    guid, apikey, region, endpoint, access_key, secret_key = cos_creds(options['obj_storage_id'])
     bucket = bucket_name(options['bucket_id'])
 
     diskType = CloudVolumeType.find(options['disk_type_id']).name
 
-    cos_ans_creds = {:resource_instance_id => cos_credentials[0], :apikey => cos_credentials[1], :bucket_name => bucket, :url_endpoint => cos_credentials[3]}
-    cos_pvs_creds = {:region => cos_credentials[2], :bucketName => bucket, :accessKey => cos_credentials[4], :secretKey => cos_credentials[5]}
+    cos_ans_creds = {:resource_instance_id => guid, :apikey => apikey, :bucket_name => bucket, :url_endpoint => endpoint}
+    cos_pvs_creds = {:region => region, :bucketName => bucket, :accessKey => access_key, :secretKey => secret_key}
 
     encr_cos_creds, encr_cos_key, encr_cos_iv = encrypt_with_aes(cos_ans_creds)
 
