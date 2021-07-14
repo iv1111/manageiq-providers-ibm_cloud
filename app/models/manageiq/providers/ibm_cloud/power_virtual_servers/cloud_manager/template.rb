@@ -1,4 +1,8 @@
 class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template < ManageIQ::Providers::CloudManager::Template
+  extend ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::ImageImport
+
+  supports :import_image
+
   supports :provisioning do
     if ext_management_system
       unsupported_reason_add(:provisioning, ext_management_system.unsupported_reason(:provisioning)) unless ext_management_system.supports?(:provisioning)
@@ -6,8 +10,6 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
       unsupported_reason_add(:provisioning, _('not connected to ems'))
     end
   end
-
-  supports :import_image
 
   def provider_object(_connection = nil)
     ext_management_system.connect
@@ -47,43 +49,6 @@ class ManageIQ::Providers::IbmCloud::PowerVirtualServers::CloudManager::Template
     end
   rescue => e
     _log.error("image=[#{name}], error: #{e}")
-  end
-
-  def self.encrypt_with_aes(creds)
-    cipher = OpenSSL::Cipher.new('aes-256-cbc')
-    cipher.encrypt
-
-    key  = Base64.strict_encode64(cipher.random_key)
-    iv   = Base64.strict_encode64(cipher.random_iv)
-    encr = Base64.strict_encode64(cipher.update(creds.to_json) + cipher.final)
-
-    [encr, key, iv]
-  end
-
-  def self.miq_img_by_ids(provider_id, image_id)
-    powervc = ExtManagementSystem.find(provider_id)
-    powervc.get_image_info(image_id)
-  end
-
-  def self.cos_creds(provider_id)
-    cos = ExtManagementSystem.find(provider_id)
-    cos.cos_creds
-  end
-
-  def self.node_creds(provider_id)
-    powervc = ExtManagementSystem.find(provider_id)
-    endp = powervc.node_endpoint
-    auth = powervc.node_auth
-
-    return endp.hostname, auth.userid, auth.password
-  end
-
-  def self.image_ems_ref(bucket_id)
-    MiqTemplate.find(bucket_id).uid_ems
-  end
-
-  def self.bucket_name(bucket_id)
-    CloudObjectStoreContainer.find(bucket_id).name
   end
 
   def self.raw_import_image(ext_management_system, options = {})
